@@ -1,0 +1,77 @@
+# Finding the Nth Highest Salary in SQL
+
+This document compares two different SQL approaches for finding the nth highest salary from a table.
+https://leetcode.com/problems/nth-highest-salary/?envType=problem-list-v2&envId=database
+
+## Approach 1: Using OFFSET
+
+```sql
+SELECT DISTINCT Salary
+FROM Employee
+ORDER BY Salary DESC
+LIMIT 1 OFFSET N-1;
+```
+
+### How it works
+1. `DISTINCT` removes duplicate salary values
+2. `ORDER BY Salary DESC` sorts salaries in descending order
+3. `LIMIT 1 OFFSET N-1` skips N-1 rows and returns the next row
+
+### Time Complexity
+- O(n log n) due to sorting operation
+- Space Complexity: O(1) as it only needs to store one value
+
+### Advantages
+- Simple and intuitive implementation
+- Works well for small to medium-sized datasets
+- Easy to understand and maintain
+
+### Disadvantages
+- Performance may degrade with large datasets due to sorting
+- OFFSET operation needs to scan through N-1 rows
+
+## Approach 2: Using Subquery Count
+
+```sql
+SELECT Salary
+FROM Employee e1
+WHERE N-1 = (
+    SELECT COUNT(DISTINCT Salary)
+    FROM Employee e2
+    WHERE e2.Salary > e1.Salary
+);
+```
+
+### How it works
+1. For each salary in the outer query
+2. Counts how many distinct salaries are greater than it
+3. Returns the salary where exactly N-1 salaries are greater
+
+### Time Complexity
+- O(n²) in worst case due to nested loop
+- Space Complexity: O(1)
+
+### Advantages
+- No explicit sorting required
+- Can be more efficient for finding specific positions (like 2nd or 3rd highest)
+- Works well with indexes on the Salary column
+
+### Disadvantages
+- More complex to understand
+- May perform poorly on large datasets due to nested query
+- Multiple table scans required
+
+## Recommendation
+
+- Use Approach 1 (OFFSET) for:
+  - Small to medium-sized datasets
+  - When code readability is a priority
+  - When the data is already sorted or indexed
+
+- Use Approach 2 (Subquery) for:
+  - When you have good indexes on the Salary column
+  - When you need to find salaries close to the top (small N)
+  - When avoiding sorting operations is beneficial
+
+## Note on NULL Values
+Both approaches need to consider NULL handling in real-world applications. It's recommended to add NULL checks or use COALESCE when dealing with salary data that might contain NULL values. 
